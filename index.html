@@ -454,7 +454,167 @@
 
     .bottom-controls .btn {
       flex: 1 1 auto;
-      min-width: 10rem;
+      min-width: 8rem;
+    }
+
+    /* —— Congratulation View —— */
+    .congrats-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      box-shadow: var(--shadow);
+      animation: rise-in 0.45s var(--ease) both;
+    }
+
+    .congrats-card[hidden] {
+      display: none;
+    }
+
+    .congrats-badge {
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .congrats-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .congrats-title {
+      margin: 0;
+      font-size: clamp(1.6rem, 5vw, 2.1rem);
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      line-height: 1.15;
+    }
+
+    .congrats-subtitle {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+    }
+
+    .congrats-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .stat-box {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .stat-number {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .congrats-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .summary-heading {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .summary-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .summary-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.65rem;
+      font-size: 0.82rem;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      align-items: center;
+    }
+
+    .summary-item.completed {
+      color: var(--text-muted);
+    }
+
+    .summary-item.completed .summary-text {
+      text-decoration: line-through;
+    }
+
+    .summary-item .summary-mark {
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-item.completed .summary-mark {
+      color: var(--text);
+    }
+
+    .congrats-quote {
+      font-size: 0.72rem;
+      font-style: italic;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      border-left: 2px solid var(--border-strong);
+      padding-left: 0.75rem;
+      margin: 0.25rem 0;
+    }
+
+    .congrats-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .congrats-actions .btn {
+      flex: 1 1 auto;
+      min-width: 8rem;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
     }
 
     .sr-only {
@@ -480,8 +640,13 @@
         letter-spacing: 0.16em;
       }
 
-      .bottom-controls .btn {
+      .bottom-controls .btn,
+      .congrats-actions .btn {
         min-width: 100%;
+      }
+
+      .stat-number {
+        font-size: 1.1rem;
       }
     }
 
@@ -509,7 +674,7 @@
         </button>
       </header>
 
-      <main>
+      <main id="main-view">
         <div class="brand">
           <h1>DAILY 3</h1>
           <p class="subtitle" id="active-count">[ 0 of 3 active ]</p>
@@ -534,9 +699,47 @@
         <ul class="task-list" id="task-list" aria-label="Focus tasks"></ul>
       </main>
 
-      <footer class="bottom-controls">
+      <section class="congrats-card" id="congrats-view" hidden aria-live="polite">
+        <div class="congrats-badge" id="congrats-badge">[ DAY COMPLETE ]</div>
+        <div class="congrats-header">
+          <h2 class="congrats-title" id="congrats-title">Congratulations!</h2>
+          <p class="congrats-subtitle" id="congrats-subtitle">You showed up and gave today your focus.</p>
+        </div>
+
+        <div class="congrats-stats">
+          <div class="stat-box">
+            <span class="stat-number" id="congrats-completed-count">0</span>
+            <span class="stat-label">Completed</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="congrats-rate">0%</span>
+            <span class="stat-label">Completion</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="congrats-total-count">0</span>
+            <span class="stat-label">Total Tasks</span>
+          </div>
+        </div>
+
+        <div class="congrats-summary">
+          <div class="summary-heading">// Today's Focus Summary</div>
+          <ul class="summary-list" id="congrats-task-list"></ul>
+        </div>
+
+        <div class="congrats-quote" id="congrats-quote">
+          "Focus is a muscle. You trained it today."
+        </div>
+
+        <div class="congrats-actions">
+          <button type="button" class="btn btn-primary" id="new-day-btn">Start New Day</button>
+          <button type="button" class="btn btn-ghost" id="back-to-focus-btn">Back to Focus</button>
+        </div>
+      </section>
+
+      <footer class="bottom-controls" id="bottom-controls">
+        <button type="button" class="btn btn-primary" id="end-day-btn">End Day</button>
         <button type="button" class="btn btn-ghost" id="mark-all-btn">Mark All Complete</button>
-        <button type="button" class="btn btn-danger" id="clear-all-btn">Clear All / Reset Day</button>
+        <button type="button" class="btn btn-danger" id="clear-all-btn">Reset Day</button>
       </footer>
     </div>
   </div>
@@ -552,7 +755,8 @@
 
       var state = {
         tasks: [],
-        theme: "light"
+        theme: "light",
+        dayEnded: false
       };
 
       var els = {
@@ -560,12 +764,26 @@
         clockDate: document.getElementById("clock-date"),
         themeToggle: document.getElementById("theme-toggle"),
         themeToggleLabel: document.getElementById("theme-toggle-label"),
+        mainView: document.getElementById("main-view"),
+        bottomControls: document.getElementById("bottom-controls"),
+        congratsView: document.getElementById("congrats-view"),
+        congratsBadge: document.getElementById("congrats-badge"),
+        congratsTitle: document.getElementById("congrats-title"),
+        congratsSubtitle: document.getElementById("congrats-subtitle"),
+        congratsCompletedCount: document.getElementById("congrats-completed-count"),
+        congratsRate: document.getElementById("congrats-rate"),
+        congratsTotalCount: document.getElementById("congrats-total-count"),
+        congratsTaskList: document.getElementById("congrats-task-list"),
+        congratsQuote: document.getElementById("congrats-quote"),
         activeCount: document.getElementById("active-count"),
         form: document.getElementById("task-form"),
         input: document.getElementById("task-input"),
         addBtn: document.getElementById("add-btn"),
         slotsNotice: document.getElementById("slots-notice"),
         list: document.getElementById("task-list"),
+        endDayBtn: document.getElementById("end-day-btn"),
+        newDayBtn: document.getElementById("new-day-btn"),
+        backToFocusBtn: document.getElementById("back-to-focus-btn"),
         markAllBtn: document.getElementById("mark-all-btn"),
         clearAllBtn: document.getElementById("clear-all-btn")
       };
@@ -616,6 +834,10 @@
           if (parsed.theme === "dark" || parsed.theme === "light") {
             state.theme = parsed.theme;
           }
+
+          if (typeof parsed.dayEnded === "boolean") {
+            state.dayEnded = parsed.dayEnded;
+          }
         } catch (e) {
           /* ignore corrupt storage */
         }
@@ -627,7 +849,8 @@
             STORAGE_KEY,
             JSON.stringify({
               tasks: state.tasks,
-              theme: state.theme
+              theme: state.theme,
+              dayEnded: state.dayEnded
             })
           );
         } catch (e) {
@@ -803,6 +1026,188 @@
         renderList();
       }
 
+      function escapeHtml(str) {
+        var div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function launchConfetti() {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var canvas = document.getElementById("confetti-canvas");
+        if (!canvas) {
+          canvas = document.createElement("canvas");
+          canvas.id = "confetti-canvas";
+          document.body.appendChild(canvas);
+        }
+        var ctx = canvas.getContext("2d");
+        var width = (canvas.width = window.innerWidth);
+        var height = (canvas.height = window.innerHeight);
+
+        var isDark = state.theme === "dark";
+        var colors = isDark
+          ? ["#FAFAFA", "#D0D0D0", "#8A8A8E", "#F59E0B", "#10B981", "#3B82F6", "#EC4899"]
+          : ["#111111", "#444444", "#777777", "#D97706", "#059669", "#2563EB", "#DB2777"];
+
+        var particles = [];
+        var count = 60;
+        for (var i = 0; i < count; i++) {
+          particles.push({
+            x: width * (0.25 + Math.random() * 0.5),
+            y: height * 0.45 + (Math.random() * 40 - 20),
+            vx: (Math.random() - 0.5) * 14,
+            vy: -Math.random() * 11 - 4,
+            size: Math.random() * 6 + 5,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            vRot: (Math.random() - 0.5) * 12,
+            opacity: 1,
+            shape: Math.random() > 0.45 ? "rect" : "symbol"
+          });
+        }
+
+        var startTime = Date.now();
+
+        function render() {
+          var elapsed = Date.now() - startTime;
+          if (elapsed > 3500) {
+            ctx.clearRect(0, 0, width, height);
+            if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+            return;
+          }
+
+          ctx.clearRect(0, 0, width, height);
+
+          particles.forEach(function (p) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.38;
+            p.vx *= 0.98;
+            p.rotation += p.vRot;
+            if (elapsed > 2000) {
+              p.opacity = Math.max(0, 1 - (elapsed - 2000) / 1500);
+            }
+
+            ctx.save();
+            ctx.globalAlpha = p.opacity;
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+
+            if (p.shape === "rect") {
+              ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.6);
+            } else {
+              ctx.font = Math.round(p.size * 1.4) + "px monospace";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText("✦", 0, 0);
+            }
+            ctx.restore();
+          });
+
+          requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+      }
+
+      function showCongrats(triggerConfetti) {
+        var total = state.tasks.length;
+        var completed = state.tasks.filter(function (t) {
+          return t.completed;
+        }).length;
+        var rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        els.congratsCompletedCount.textContent = completed;
+        els.congratsTotalCount.textContent = total;
+        els.congratsRate.textContent = rate + "%";
+
+        if (total > 0 && completed === total) {
+          els.congratsBadge.textContent = "[ ✦ 100% FOCUS ACHIEVED ✦ ]";
+          els.congratsTitle.textContent = "Congratulations!";
+          els.congratsSubtitle.textContent =
+            "Outstanding work! You conquered every focus target you set for today.";
+        } else if (completed > 0) {
+          els.congratsBadge.textContent = "[ DAY CONCLUDED ]";
+          els.congratsTitle.textContent = "Great Job Today!";
+          els.congratsSubtitle.textContent =
+            "Solid effort. Meaningful progress compounds with every completed task.";
+        } else if (total > 0) {
+          els.congratsBadge.textContent = "[ DAY CONCLUDED ]";
+          els.congratsTitle.textContent = "Day Concluded";
+          els.congratsSubtitle.textContent =
+            "You showed up and worked on priorities today. Rest up and reset tomorrow.";
+        } else {
+          els.congratsBadge.textContent = "[ DAY CONCLUDED ]";
+          els.congratsTitle.textContent = "Rest & Reset";
+          els.congratsSubtitle.textContent =
+            "No tasks recorded today. Tomorrow is a fresh canvas.";
+        }
+
+        els.congratsTaskList.innerHTML = "";
+        if (total === 0) {
+          var emptyItem = document.createElement("li");
+          emptyItem.className = "summary-item";
+          emptyItem.innerHTML =
+            '<span class="summary-mark">[-]</span><span class="summary-text">No tasks logged for today</span>';
+          els.congratsTaskList.appendChild(emptyItem);
+        } else {
+          state.tasks.forEach(function (task) {
+            var item = document.createElement("li");
+            item.className = "summary-item" + (task.completed ? " completed" : "");
+            var mark = task.completed ? "[✓]" : "[ ]";
+            var statusSuffix = task.completed ? "" : " (in progress)";
+            item.innerHTML =
+              '<span class="summary-mark">' +
+              mark +
+              '</span><span class="summary-text">' +
+              escapeHtml(task.title) +
+              statusSuffix +
+              "</span>";
+            els.congratsTaskList.appendChild(item);
+          });
+        }
+
+        var quotes = [
+          '"Focus is a muscle. You trained it today."',
+          '"Small daily disciplines compound into massive transformations."',
+          '"Simplicity is the prerequisite for focus."',
+          '"Well begun is half done; well finished is fully won."',
+          '"Rest with a quiet mind knowing you showed up today."'
+        ];
+        var dayIdx = new Date().getDay();
+        els.congratsQuote.textContent = quotes[dayIdx % quotes.length];
+
+        els.mainView.hidden = true;
+        els.bottomControls.hidden = true;
+        els.congratsView.hidden = false;
+
+        state.dayEnded = true;
+        saveState();
+
+        if (triggerConfetti !== false) {
+          launchConfetti();
+        }
+      }
+
+      function showFocusView() {
+        els.congratsView.hidden = true;
+        els.mainView.hidden = false;
+        els.bottomControls.hidden = false;
+        state.dayEnded = false;
+        saveState();
+        renderList();
+      }
+
+      function startNewDay() {
+        state.tasks = [];
+        state.dayEnded = false;
+        saveState();
+        showFocusView();
+        els.input.value = "";
+        els.input.focus();
+      }
+
       function clearAll() {
         if (!state.tasks.length) return;
         var ok = window.confirm(
@@ -810,8 +1215,9 @@
         );
         if (!ok) return;
         state.tasks = [];
+        state.dayEnded = false;
         saveState();
-        renderList();
+        showFocusView();
         els.input.focus();
       }
 
@@ -825,6 +1231,11 @@
       });
 
       els.themeToggle.addEventListener("click", toggleTheme);
+      els.endDayBtn.addEventListener("click", function () {
+        showCongrats(true);
+      });
+      els.newDayBtn.addEventListener("click", startNewDay);
+      els.backToFocusBtn.addEventListener("click", showFocusView);
       els.markAllBtn.addEventListener("click", markAllComplete);
       els.clearAllBtn.addEventListener("click", clearAll);
 
@@ -832,7 +1243,11 @@
       loadState();
       applyTheme();
       updateClock();
-      renderList();
+      if (state.dayEnded) {
+        showCongrats(false);
+      } else {
+        renderList();
+      }
       setInterval(updateClock, 1000);
     })();
   </script>
