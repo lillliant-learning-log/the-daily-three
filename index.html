@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Daily 3</title>
+  <style>
+    :root {
+      --bg: #FBFBFB;
+      --bg-elevated: #F5F5F7;
+      --text: #111111;
+      --text-muted: #6B6B6B;
+      --border: #E5E5E5;
+      --border-strong: #D0D0D0;
+      --accent: #111111;
+      --accent-text: #FBFBFB;
+      --danger: #8A3A3A;
+      --shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+      --focus-ring: rgba(17, 17, 17, 0.18);
+      --slot-empty: rgba(17, 17, 17, 0.04);
+      --grain: rgba(17, 17, 17, 0.015);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0E0E10;
+      --bg-elevated: #161618;
+      --text: #FAFAFA;
+      --text-muted: #8A8A8E;
+      --border: #2A2A2E;
+      --border-strong: #3A3A40;
+      --accent: #FAFAFA;
+      --accent-text: #0E0E10;
+      --danger: #C97A7A;
+      --shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+      --focus-ring: rgba(250, 250, 250, 0.2);
+      --slot-empty: rgba(250, 250, 250, 0.03);
+      --grain: rgba(255, 255, 255, 0.02);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: 0.02em;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.35s var(--ease), color 0.35s var(--ease);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, var(--grain), transparent 55%),
+        linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 42%, var(--bg) 100%);
+      transition: background 0.35s var(--ease);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1.25rem 2rem;
+    }
+
+    .shell {
+      width: min(100%, 32rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      animation: rise-in 0.55s var(--ease) both;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes tick-pulse {
+      0%,
+      100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    @keyframes strike-in {
+      from {
+        opacity: 0.6;
+        text-decoration-color: transparent;
+      }
+      to {
+        opacity: 0.45;
+        text-decoration-color: currentColor;
+      }
+    }
+
+    @keyframes slot-pop {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* —— Top bar —— */
+    .top-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.9rem;
+    }
+
+    .clock-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .clock-time {
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock-sep {
+      animation: tick-pulse 1s steps(1) infinite;
+    }
+
+    .clock-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .theme-toggle {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      font: inherit;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.45rem 0.7rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition:
+        color 0.2s var(--ease),
+        border-color 0.2s var(--ease),
+        background-color 0.2s var(--ease),
+        transform 0.15s var(--ease);
+    }
+
+    .theme-toggle:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(1px);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    /* —— Header —— */
+    .brand {
+      text-align: left;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 2.65rem);
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      line-height: 1.1;
+    }
+
+    .brand .subtitle {
+      margin: 0.55rem 0 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* —— Input —— */
+    .composer {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    #task-input {
+      flex: 1;
+      min-width: 0;
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      padding: 0.7rem 0.85rem;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+    }
+
+    #task-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    #task-input:focus {
+      outline: none;
+      border-color: var(--border-strong);
+    }
+
+    #task-input:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    #task-input:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.7rem 0.95rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+      transition:
+        color 0.2s var(--ease),
+        border-color 0.2s var(--ease),
+        background-color 0.2s var(--ease),
+        transform 0.15s var(--ease),
+        opacity 0.2s var(--ease);
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--border-strong);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.92;
+      border-color: var(--accent);
+    }
+
+    .btn-ghost {
+      background: transparent;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: var(--border);
+    }
+
+    .slots-notice {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      min-height: 1.1em;
+    }
+
+    .slots-notice[hidden] {
+      display: none;
+    }
+
+    /* —— Task list —— */
+    .task-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .task-slot {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 3.1rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      box-shadow: var(--shadow);
+      animation: slot-pop 0.35s var(--ease) both;
+    }
+
+    .task-slot.empty {
+      background: var(--slot-empty);
+      color: var(--text-muted);
+      justify-content: center;
+      grid-template-columns: 1fr;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border-style: dashed;
+    }
+
+    .task-slot.completed .task-title {
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+      color: var(--text-muted);
+      animation: strike-in 0.35s var(--ease) both;
+    }
+
+    .check-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.1rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.15s var(--ease), transform 0.15s var(--ease);
+    }
+
+    .check-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .check-btn:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .task-title {
+      font-size: 0.88rem;
+      letter-spacing: 0.03em;
+      word-break: break-word;
+    }
+
+    .delete-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font: inherit;
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0.35rem 0.45rem;
+      cursor: pointer;
+      transition: color 0.15s var(--ease), transform 0.15s var(--ease);
+    }
+
+    .delete-btn:hover {
+      color: var(--danger);
+    }
+
+    .delete-btn:active {
+      transform: scale(0.95);
+    }
+
+    .delete-btn:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    /* —— Bottom controls —— */
+    .bottom-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-top: 0.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .bottom-controls .btn {
+      flex: 1 1 auto;
+      min-width: 10rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding: 1.15rem 1rem 1.5rem;
+        justify-content: flex-start;
+        padding-top: 2rem;
+      }
+
+      .brand h1 {
+        letter-spacing: 0.16em;
+      }
+
+      .bottom-controls .btn {
+        min-width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <header class="top-bar">
+        <div class="clock-block" aria-live="polite">
+          <div class="clock-time" id="clock-time">00<span class="clock-sep">:</span>00<span class="clock-sep">:</span>00</div>
+          <div class="clock-date" id="clock-date">DAY, MON 00</div>
+        </div>
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+          <span id="theme-toggle-label">Dark</span>
+        </button>
+      </header>
+
+      <main>
+        <div class="brand">
+          <h1>DAILY 3</h1>
+          <p class="subtitle" id="active-count">[ 0 of 3 active ]</p>
+        </div>
+
+        <form class="composer" id="task-form" autocomplete="off">
+          <label class="sr-only" for="task-input">New task</label>
+          <div class="input-row">
+            <input
+              type="text"
+              id="task-input"
+              name="task"
+              maxlength="120"
+              placeholder="What deserves focus today?"
+              spellcheck="false"
+            />
+            <button type="submit" class="btn btn-primary" id="add-btn">Add</button>
+          </div>
+          <p class="slots-notice" id="slots-notice" hidden>[ slots full · complete a task to unlock ]</p>
+        </form>
+
+        <ul class="task-list" id="task-list" aria-label="Focus tasks"></ul>
+      </main>
+
+      <footer class="bottom-controls">
+        <button type="button" class="btn btn-ghost" id="mark-all-btn">Mark All Complete</button>
+        <button type="button" class="btn btn-danger" id="clear-all-btn">Clear All / Reset Day</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "daily3.state";
+      var MAX_ACTIVE = 3;
+      var DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+      var MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+      var state = {
+        tasks: [],
+        theme: "light"
+      };
+
+      var els = {
+        clockTime: document.getElementById("clock-time"),
+        clockDate: document.getElementById("clock-date"),
+        themeToggle: document.getElementById("theme-toggle"),
+        themeToggleLabel: document.getElementById("theme-toggle-label"),
+        activeCount: document.getElementById("active-count"),
+        form: document.getElementById("task-form"),
+        input: document.getElementById("task-input"),
+        addBtn: document.getElementById("add-btn"),
+        slotsNotice: document.getElementById("slots-notice"),
+        list: document.getElementById("task-list"),
+        markAllBtn: document.getElementById("mark-all-btn"),
+        clearAllBtn: document.getElementById("clear-all-btn")
+      };
+
+      function uid() {
+        return "t_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+      }
+
+      function pad(n) {
+        return String(n).padStart(2, "0");
+      }
+
+      function activeTasks() {
+        return state.tasks.filter(function (t) {
+          return !t.completed;
+        });
+      }
+
+      function activeCount() {
+        return activeTasks().length;
+      }
+
+      function slotsFull() {
+        return activeCount() >= MAX_ACTIVE;
+      }
+
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return;
+
+          if (Array.isArray(parsed.tasks)) {
+            state.tasks = parsed.tasks
+              .filter(function (t) {
+                return t && typeof t.id === "string" && typeof t.title === "string";
+              })
+              .map(function (t) {
+                return {
+                  id: t.id,
+                  title: String(t.title).slice(0, 120),
+                  completed: Boolean(t.completed)
+                };
+              });
+          }
+
+          if (parsed.theme === "dark" || parsed.theme === "light") {
+            state.theme = parsed.theme;
+          }
+        } catch (e) {
+          /* ignore corrupt storage */
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              tasks: state.tasks,
+              theme: state.theme
+            })
+          );
+        } catch (e) {
+          /* quota / private mode */
+        }
+      }
+
+      function applyTheme() {
+        document.documentElement.setAttribute("data-theme", state.theme);
+        var isDark = state.theme === "dark";
+        els.themeToggleLabel.textContent = isDark ? "Light" : "Dark";
+        els.themeToggle.setAttribute(
+          "aria-label",
+          isDark ? "Switch to light mode" : "Switch to dark mode"
+        );
+      }
+
+      function toggleTheme() {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        applyTheme();
+        saveState();
+      }
+
+      function updateClock() {
+        var now = new Date();
+        var h = pad(now.getHours());
+        var m = pad(now.getMinutes());
+        var s = pad(now.getSeconds());
+        els.clockTime.innerHTML =
+          h +
+          '<span class="clock-sep">:</span>' +
+          m +
+          '<span class="clock-sep">:</span>' +
+          s;
+        els.clockDate.textContent =
+          DAYS[now.getDay()] +
+          ", " +
+          MONTHS[now.getMonth()] +
+          " " +
+          pad(now.getDate());
+      }
+
+      function updateComposer() {
+        var full = slotsFull();
+        els.input.disabled = full;
+        els.addBtn.disabled = full;
+        els.slotsNotice.hidden = !full;
+        if (full) {
+          els.input.placeholder = "Slots full";
+        } else {
+          els.input.placeholder = "What deserves focus today?";
+        }
+      }
+
+      function updateActiveLabel() {
+        var n = activeCount();
+        els.activeCount.textContent = "[ " + n + " of " + MAX_ACTIVE + " active ]";
+      }
+
+      function renderList() {
+        els.list.innerHTML = "";
+
+        var incomplete = activeTasks();
+        var complete = state.tasks.filter(function (t) {
+          return t.completed;
+        });
+        var ordered = incomplete.concat(complete);
+
+        var emptySlots = Math.max(0, MAX_ACTIVE - incomplete.length);
+
+        ordered.forEach(function (task) {
+          els.list.appendChild(createTaskItem(task));
+        });
+
+        for (var i = 0; i < emptySlots; i++) {
+          var empty = document.createElement("li");
+          empty.className = "task-slot empty";
+          empty.setAttribute("aria-hidden", "true");
+          empty.textContent = "[ empty slot ]";
+          empty.style.animationDelay = (ordered.length + i) * 40 + "ms";
+          els.list.appendChild(empty);
+        }
+
+        updateActiveLabel();
+        updateComposer();
+      }
+
+      function createTaskItem(task) {
+        var li = document.createElement("li");
+        li.className = "task-slot" + (task.completed ? " completed" : "");
+        li.dataset.id = task.id;
+
+        var check = document.createElement("button");
+        check.type = "button";
+        check.className = "check-btn";
+        check.setAttribute(
+          "aria-label",
+          task.completed ? "Mark incomplete: " + task.title : "Mark complete: " + task.title
+        );
+        check.textContent = task.completed ? "[x]" : "[ ]";
+        check.addEventListener("click", function () {
+          toggleComplete(task.id);
+        });
+
+        var title = document.createElement("span");
+        title.className = "task-title";
+        title.textContent = task.title;
+
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "delete-btn";
+        del.setAttribute("aria-label", "Delete task: " + task.title);
+        del.textContent = "×";
+        del.addEventListener("click", function () {
+          deleteTask(task.id);
+        });
+
+        li.appendChild(check);
+        li.appendChild(title);
+        li.appendChild(del);
+        return li;
+      }
+
+      function addTask(title) {
+        var trimmed = title.trim();
+        if (!trimmed || slotsFull()) return false;
+
+        state.tasks.push({
+          id: uid(),
+          title: trimmed.slice(0, 120),
+          completed: false
+        });
+        saveState();
+        renderList();
+        return true;
+      }
+
+      function toggleComplete(id) {
+        var task = state.tasks.find(function (t) {
+          return t.id === id;
+        });
+        if (!task) return;
+
+        if (task.completed) {
+          if (slotsFull()) return;
+          task.completed = false;
+        } else {
+          task.completed = true;
+        }
+
+        saveState();
+        renderList();
+      }
+
+      function deleteTask(id) {
+        state.tasks = state.tasks.filter(function (t) {
+          return t.id !== id;
+        });
+        saveState();
+        renderList();
+      }
+
+      function markAllComplete() {
+        var changed = false;
+        state.tasks.forEach(function (t) {
+          if (!t.completed) {
+            t.completed = true;
+            changed = true;
+          }
+        });
+        if (!changed) return;
+        saveState();
+        renderList();
+      }
+
+      function clearAll() {
+        if (!state.tasks.length) return;
+        var ok = window.confirm(
+          "Reset the day?\n\nThis clears every task. This cannot be undone."
+        );
+        if (!ok) return;
+        state.tasks = [];
+        saveState();
+        renderList();
+        els.input.focus();
+      }
+
+      /* —— Events —— */
+      els.form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (addTask(els.input.value)) {
+          els.input.value = "";
+          if (!slotsFull()) els.input.focus();
+        }
+      });
+
+      els.themeToggle.addEventListener("click", toggleTheme);
+      els.markAllBtn.addEventListener("click", markAllComplete);
+      els.clearAllBtn.addEventListener("click", clearAll);
+
+      /* —— Boot —— */
+      loadState();
+      applyTheme();
+      updateClock();
+      renderList();
+      setInterval(updateClock, 1000);
+    })();
+  </script>
+</body>
+</html>
